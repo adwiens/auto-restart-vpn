@@ -12,27 +12,32 @@ setTimeout(() => process.exit(), 59000); // run for 1 minute max
 const execPromise = promisify(exec);
 const timeoutPromise = async (ms) => await new Promise(resolve => setTimeout(() => resolve(), ms));
 
+async function execAndPrint(cmd) {
+  const { stderr, stdout } = await execPromise(cmd);
+  console.log(stdout);
+  if (stderr && stderr.length > 0) {
+    console.error(stderr);
+  }
+}
+
 (async () => {
+  await execAndPrint('pm2 status'); // print status first
   while (true) {
-    let success = false;
-    for (let ctr = 1; !success && ctr <= numRetries; ctr++) {
+    for (let ctr = 1; ctr <= numRetries; ctr++) {
       try {
         console.log(`trying to reach ${url}...`);
         await axios({ url, timeout: 5 * baseTimeout });
         console.log(`success`);
-        success = true;
+        break;
       } catch (e) {
         console.log(`failed attempt ${ctr}`);
-        await timeoutPromise(ctr * baseTimeout);
-      }
-    }
-    if (!success) {
-      const cmd = `pm2 restart ${pm2ScriptName}`;
-      console.log(`failed to reach ${url}. running "${cmd}"...`);
-      const { stderr, stdout } = await execPromise(cmd);
-      console.log(stdout);
-      if (stderr && stderr.length > 0) {
-        console.error(stderr);
+        if (ctr < numRetries) {
+          await timeoutPromise(baseTimeout);
+        } else {
+          const cmd = `pm2 restart ${pm2ScriptName}`;
+          console.log(`failed to reach ${url}. running "${cmd}"...`);
+          await execAndPrint(cmd);
+        }
       }
     }
     await timeoutPromise(5 * baseTimeout);
