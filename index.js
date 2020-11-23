@@ -7,7 +7,10 @@ const baseTimeout = 1000;
 const url = 'https://jira.lamresearch.com';
 const pm2ScriptName = 'connect-lam-vpn';
 
-setTimeout(() => process.exit(), 59000); // run for 1 minute max
+setTimeout(() => {
+  console.log('quitting after 59s');
+  process.exit();
+}, 59000); // run for < 1 minute since crontab runs this script every minute
 
 const execPromise = promisify(exec);
 const timeoutPromise = async (ms) => await new Promise(resolve => setTimeout(() => resolve(), ms));
