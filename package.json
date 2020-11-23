@@ -1,0 +1,12 @@
+{
+  "name": "auto-restart-vpn",
+  "version": "1.0.0",
+  "main": "index.js",
+  "license": "MIT",
+  "scripts": {
+    "start": "NODE_TLS_REJECT_UNAUTHORIZED=0 node ."
+  },
+  "dependencies": {
+    "axios": "^0.21.0"
+  }
+}
